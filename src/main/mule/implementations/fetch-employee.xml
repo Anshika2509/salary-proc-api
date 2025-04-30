@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="get:\employees\(id):sp-prc-api-config" doc:id="b4dd93ed-f570-4cee-809a-d75ae71b7f07" >
+		<logger level="INFO" doc:name="INFO: START" doc:id="fc7da3d4-5333-4639-b73b-f48688304512" message='#[{&#10;	"Flow": flow.name ++ "Started",&#10;	"CorrelationID" : correlationId&#10;}]' />
+		<ee:transform doc:name="vars: id" doc:id="1df3e566-ffc5-4ef0-aa7d-9c5f2833027c" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="id" ><![CDATA[attributes.uriParams.'id']]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<validation:is-number doc:name="id is Number?" doc:id="e2c4b4c7-941d-457f-a0bd-7537229c463c" value="#[vars.id]" config-ref="Validation_Config" numberType="INTEGER"/>
+		<flow-ref doc:name="fetch from db" doc:id="ce86fe8d-91c2-494f-8ce0-4c486ba6eecc" name="fetch-from-db" />
+		<choice doc:name="isEmpty(payload)" doc:id="81c0dd14-9f07-4db7-8982-7ea909ab55c3" >
+			<when expression="#[sizeOf(payload) &gt; 0]" >
+				<ee:transform doc:name="Prepare Response" doc:id="cf6b05b5-47f9-4ffe-bf7c-dd909d153bd7" >
+					<ee:message />
+					<ee:variables >
+						<ee:set-variable variableName="salary" ><![CDATA[payload[0].emp_salary]]></ee:set-variable>
+						<ee:set-variable variableName="target" ><![CDATA[payload[0].Country]]></ee:set-variable>
+						<ee:set-variable variableName="resultDb" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Employee_Id" : payload[0].emp_id,
+	"Employee_Name" : payload[0].emp_name,
+	"Department" : payload[0].emp_dep,
+	"Country Code" : payload[0].country	
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<try doc:name="Try" doc:id="c4003832-e874-412b-90c9-9f39a2d1fb4c" >
+					<http:request method="GET" doc:name="converting salary" doc:id="695ffbe3-bb4b-4772-8818-6f5c3fb0dcf1" url="https://v6.exchangerate-api.com/v6/6d3292fa8bd26b1a87d02863/pair/INR/{to}/{amount}" target="result" config-ref="HTTP_Request_configuration">
+						<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	amount : vars.salary,
+	to : vars.target
+}]]]></http:uri-params>
+						<http:response-validator >
+							<http:success-status-code-validator values="200..499" />
+						</http:response-validator>
+					</http:request>
+					<choice doc:name="Valid Country Code ?" doc:id="fd771ff6-b5ca-4041-9069-42cd57bb1aa5" >
+						<when expression="#[(vars.result pluck $$) contains ('error-type' as Key)]" >
+							<ee:transform doc:name="Unsupported country code" doc:id="6d46cad3-f2c8-4c6d-a98b-7834162a15e8" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.resultDb ++
+{
+	"Salary" : vars.salary as String ++ " INR"
+}
+]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</when>
+						<otherwise >
+							<ee:transform doc:name="Supported Country Code" doc:id="48970539-0da0-4469-b07f-56156ea33bd1" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.resultDb ++ {
+	"Salary" : (vars.result.conversion_result as String) ++ " " ++ vars.target
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</otherwise>
+					</choice>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="21101347-b796-41ff-a999-16f1de895eaa" >
+							<ee:transform doc:name="Error in request" doc:id="ad6038ec-46e1-42ff-ae63-240fdb3bc7a5" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.resultDb ++ { 
+	"Salary" : vars.salary as String ++ " INR"
+}
+]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Employee not found" doc:id="ce967775-9658-4831-b452-d24846775676" type="EMP:EMPLOYEE_NOT_FOUND" description="Not found the employee" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO: END" doc:id="46b52c16-51c1-45cd-8a1a-08914bf8ee55" message='#[{&#10;	"Flow": flow.name ++ "Started",&#10;	"CorrelationID" : correlationId&#10;}]' />
+	</flow>
+	<sub-flow name="fetch-from-db" doc:id="d3251eec-d2d5-4852-8adb-6368dff877fd" >
+		<try doc:name="Try" doc:id="47a28b16-0ff2-4cb7-acec-38e8669e0fa4" >
+			<logger level="INFO" doc:name="INFO: START" doc:id="37250d64-908f-4e61-9947-ae9cfd4c8e90" message='#[{&#10;	"Flow": flow.name ++ "Started",&#10;	"CorrelationID" : correlationId&#10;}]' />
+			<db:select doc:id="72044296-4603-49c0-9e70-6371f84e1f6a" config-ref="Database_Config" doc:name="Employee" >
+				<db:sql ><![CDATA[select * from salary where emp_id = :emp_id]]></db:sql>
+				<db:input-parameters ><![CDATA[#[{
+	"emp_id" : vars.id
+}]]]></db:input-parameters>
+			</db:select>
+			<logger level="INFO" doc:name="INFO: END" doc:id="fdff2de4-ffd5-4b79-b1ce-d5e65ff67109" message='#[{&#10;	"Flow": flow.name ++ "Ended",&#10;	"CorrelationID" : correlationId&#10;}]' />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="338e5564-44fd-480b-875e-95b7893a8830" >
+					<logger level="INFO" doc:name="Logger" doc:id="94970bac-7a37-4d63-a7ee-3db75b413a59" message="Database error occurred in sub flow" />
+					<ee:transform doc:name="Transform Message" doc:id="afaa4724-ef22-460a-8704-17f035cf9c37" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[output application/json
+---
+{
+	"Message" : "Database error",
+	"Error" : error.description
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

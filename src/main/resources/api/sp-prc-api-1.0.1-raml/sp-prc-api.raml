@@ -1,0 +1,66 @@
+#%RAML 1.0
+title: Salary Processing Api
+baseUri: http://localhost:8081/api/v1
+version: v1
+# securitySchemes:
+#   basic: !include /exchange_modules/ce235d46-115c-497c-b0e2-474afd80f5e9/sp-basic-auth-security-scheme/1.0.0/sp-basic-auth-security-scheme.raml
+    
+securitySchemes:
+  oauth2.0: !include /exchange_modules/ce235d46-115c-497c-b0e2-474afd80f5e9/sp-oauth20-security-scheme/1.0.0/sp-oauth20-security-scheme.raml
+
+description: API to manage employee salary records. It can be used to retrieve records of all employees, to add an employee's record, fetch a specific record using employee's id, delete record using employee's id and update employee's salary using employee's id.
+
+uses:
+  common-data-types: /exchange_modules/ce235d46-115c-497c-b0e2-474afd80f5e9/sp-data-types-library/1.0.0/sp-data-types-library.raml
+
+resourceTypes:
+  commonResource: !include resourceTypes/commonResources.raml 
+
+traits:
+  errorTraits: !include /exchange_modules/ce235d46-115c-497c-b0e2-474afd80f5e9/sp-error-responses/1.0.0/sp-error-responses.raml
+
+/employees:
+  description: This endpoint is used to retrieve data of all employees or to add data of an employee.
+  get:
+    securedBy : [oauth2.0]
+  post:
+    securedBy : [oauth2.0]
+  type:
+    commonResource:
+      getDesciption: Retrieve all employee salary details
+      getResponseType: common-data-types.all-employee-response-type
+      getResponseExample: !include examples/employeesExample.json 
+      postDesciption: Add a new employee salary entry
+      postRequestType: common-data-types.add-employee-request-type
+      postRequestExample: !include examples/singleEmployeeExample.json
+      postResponseType: common-data-types.message-status-response-type
+      postResponseExample: !include examples/successResponse.json
+
+  /{id}:
+    description: This endpoint is used to fetch employee's data by Id, delete data by Id or update data by Id.
+    is: [errorTraits]
+    get:
+      securedBy : [oauth2.0]
+    delete:
+      securedBy : [oauth2.0]
+    put:
+      securedBy : [oauth2.0]
+    type:
+      commonResource:
+        getDesciption: Retrieve an employee's salary details by ID
+        getResponseType: common-data-types.fetch-by-id-response-type
+        getResponseExample: !include examples/singleEmployeeExample.json
+        deleteDescription: Remove an employee by ID
+        putDescription: Update employee salary details by ID
+        putRequestType: common-data-types.update-salary-request-type
+        putRequestExample: !include examples/salaryUpdateExample.json
+/health-check:
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              {
+                "message" : "sp-proc api is alive and kicking"
+              }

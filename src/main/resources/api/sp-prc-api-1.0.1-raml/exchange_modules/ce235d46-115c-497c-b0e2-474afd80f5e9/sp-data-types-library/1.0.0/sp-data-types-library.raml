@@ -1,0 +1,68 @@
+#%RAML 1.0 Library
+usage: Data Types Library
+types:
+  all-employee-response-type:
+    type: array
+    items:
+      type: object
+      properties:
+        emp_id:
+          description: Employee's ID
+          type: number
+        emp_name:
+          description: Employee's Name
+          type: string
+        emp_dep:
+          description: Employee's Department
+          type: string
+        emp_salary:
+          description: Employee's Salary
+          type: number
+        country:
+          description: Employee's Country Code
+          type: string
+  fetch-by-id-response-type:
+    type: object
+    properties:
+      emp_id:
+          type: number
+      emp_name:
+        type: string
+      emp_dep:
+        type: string
+      emp_salary:
+        type: number
+      country:
+        type: string
+  message-status-response-type:
+    type: object
+    properties:
+      status:
+        type: number
+      message:
+        type: string
+  add-employee-request-type:
+    type: object
+    properties:
+      emp_id:
+        type: number
+        required: true
+      emp_name:
+        type: string
+        required: true
+      emp_dep:
+        type: string
+        required: true
+      emp_salary:
+        type: number
+        required: true
+      country:
+        type: string
+        required: true
+  update-salary-request-type:
+    type: object
+    properties:
+      emp_id:
+        type: number
+      updated-salary:
+        type: number

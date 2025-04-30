@@ -1,0 +1,27 @@
+#%RAML 1.0 Trait
+description: Error responses for salary processing API
+
+responses:
+  400:
+    body:
+      application/json:
+        example: |
+          {"errorMessage":"Bad Request", "errorCode":"400"}
+  404:
+    body:
+      application/json:
+        example:
+          {
+            "status" : 404,
+            "message" : "Employee with ID {id} Not Found"
+          }
+  401:
+    body:
+      application/json:
+        example: |
+          {"errorMessage":"Unauthorized", "errorCode":"401"}
+  500:
+    body:
+      application/json:
+        example: |
+          {"errorMessage":"Internal Server Error", "errorCode":"500"}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="put:\employees\(id):application\json:sp-prc-api-config" doc:id="afba5818-da02-4b4e-8ae7-b6db9c54e9f6" >
+		<logger level="INFO" doc:name="INFO: START" doc:id="f69fbcd1-e80f-411f-a097-03c94a2deb78" message='#[{&#10;	"Flow": flow.name ++ "Started",&#10;	"CorrelationID" : correlationId&#10;}]'/>
+		<ee:transform doc:name="var: id, updated_salary" doc:id="47af8931-fdfd-4513-b307-432ea1e6c175" >
+			<ee:variables >
+				<ee:set-variable variableName="id" ><![CDATA[attributes.uriParams.id]]></ee:set-variable>
+				<ee:set-variable variableName="salary" ><![CDATA[payload."updated-salary"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:update doc:name="Employee's Salary" doc:id="99ad1dbd-4206-4825-8f60-f91a18331946" config-ref="Database_Config">
+			<db:sql ><![CDATA[Update salary set emp_salary = :salary where emp_id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id" : vars.id,
+	"salary" : vars.salary
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Prepare Response" doc:id="952ba726-7534-4a50-a92b-6a9ce7319c34" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  Message: "Salary updated successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="INFO: END" doc:id="f2300aee-5a79-4d8f-87cc-8412fb52fa81" message='#[{&#10;	"Flow": flow.name ++ "Ended",&#10;	"CorrelationID" : correlationId&#10;}]'/>
+	</flow>
+</mule>

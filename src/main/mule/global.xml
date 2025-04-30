@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<http:listener-config name="sp-prc-api-httpListenerConfig" basePath="${http.path}">
+        <http:listener-connection host="${http.host}" port="${http.port}" />
+    </http:listener-config>
+    <apikit:config name="sp-prc-api-config" api="resource::ce235d46-115c-497c-b0e2-474afd80f5e9:sp-prc-api:1.0.1:raml:zip:sp-prc-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <configuration doc:name="Configuration" doc:id="cd1fcdc9-7a68-4402-ada0-c7f8d4d7ea33" defaultErrorHandler-ref="global-error-handler" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="ca01e8f0-5fee-4c28-ab7d-46af4cf16600" />
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="0b05fec1-ef82-46f6-9d69-9768e2c35895" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${secure::db.password}" database="${db.database}" />
+	</db:config>
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="6866128c-cf6d-4f44-8754-724950654389" />
+	<configuration-properties doc:name="Configuration properties" doc:id="d9d00a0b-380f-4bec-9abf-eafbbd96bd05" file="properties-${env}.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="ec8240b3-867f-4d4c-bdec-fbef6beeb536" file="secure-properties-${env}.yaml" key="${mule.key}" />
+	<api-gateway:autodiscovery apiId="20272802" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="25597aba-2b0d-4465-b85e-7535ee354465" flowRef="sp-prc-api-main" />
+	<global-property doc:name="Global Property" doc:id="f8273c96-62c8-4d2c-8a7a-df238a09bb85" name="env" value="dev" />
+	<global-property doc:name="Global Property" doc:id="ed9e68f8-ce0d-426f-b0b6-269ea369bb6a" name="mule.key" value="1234567890abcdef" />
+</mule>

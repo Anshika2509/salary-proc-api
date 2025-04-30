@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="delete:\employees\(id):sp-prc-api-config" doc:id="9d94923d-218d-4551-9f65-339d91332958" >
+		<logger level="INFO" doc:name="INFO: START" doc:id="ea868f58-d946-4f61-a26c-810d83938c7d" message='#[{&#10;	"Flow": flow.name ++ "Started",&#10;	"CorrelationID" : correlationId&#10;}]' />
+		<ee:transform doc:name="vars : id" doc:id="509a1a54-e2f7-44e3-aec0-8e1c95d9f77a" >
+			<ee:variables >
+				<ee:set-variable variableName="id" ><![CDATA[attributes.uriParams.'id']]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:delete doc:name="Employee" doc:id="5600e22e-4d58-4334-be5c-f11dca0febca" config-ref="Database_Config">
+			<db:sql ><![CDATA[delete from salary where emp_id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id" : vars.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Prepare Response" doc:id="3056fd4c-17e9-44b5-a7ef-b9d18fbc4504" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Employee deleted successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="INFO: END" doc:id="fec74cb1-c7cc-4fce-b8fb-dd442fd198ed" message='#[{&#10;	"Flow": flow.name ++ "Ended",&#10;	"CorrelationID" : correlationId&#10;}]'/>
+	</flow>
+</mule>

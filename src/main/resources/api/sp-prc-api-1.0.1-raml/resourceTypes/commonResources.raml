@@ -1,0 +1,63 @@
+#%RAML 1.0 ResourceType
+
+  get?:
+    description: <<getDesciption>>
+    responses:
+      200:
+        body:
+          application/json:
+            type: <<getResponseType>>
+            example: <<getResponseExample>>
+  
+  post?:
+    description: <<postDesciption>>
+    body:
+      application/json:
+        type: <<postRequestType>>
+        example: <<postRequestExample>>
+    responses:
+      201:
+        body:
+          application/json:
+            type: <<postResponseType>>
+            example: <<postResponseExample>>
+    
+  delete?:
+    description: <<deleteDescription>>
+    responses:
+      200:
+        body:
+          application/json:
+            example: {
+                "message" : "Employee deleted successfully"
+              }
+
+  patch?:
+    description: <<patchDescription>>
+    body:
+      application/json:
+        type: <<patchRequestType>>
+        example: <<patchRequestExample>>
+    responses:
+      200:
+        body:
+          application/json:
+            type: <<patchResponseType>>
+            example: <<patchResponseExample>>
+  put?:
+    description: <<putDescription>>
+    body:
+      application/json:
+        type: <<putRequestType>>
+        example: <<putRequestExample>>
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              {
+                "Message" : "Salary updated successfully"
+              }
+        
+          
+            

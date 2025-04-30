@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="get:\employees:sp-prc-api-config" doc:id="9d1289a0-1fcd-4c07-a926-4c2c826378b1" >
+		<logger level="INFO" doc:name="INFO: START" doc:id="6c582599-b65b-43ea-bba5-5cf2280ea840" message='#[{&#10;	"Flow": flow.name ++ "Started",&#10;	"CorrelationID" : correlationId&#10;}]'/>
+		<db:select doc:name="All employees" doc:id="f738b107-f20e-45a1-8caa-3fc510813711" config-ref="Database_Config">
+			<db:sql ><![CDATA[Select * from salary]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="java to json" doc:id="119a3758-e4f0-41fa-8104-71abd4c263a9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="INFO: END" doc:id="df2f1522-f416-44ee-8d76-bf6a433b3cd3" message='#[{&#10;	"Flow": flow.name ++ "Ended",&#10;	"CorrelationID" : correlationId&#10;}]'/>
+	</flow>
+</mule>
