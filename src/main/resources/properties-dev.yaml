@@ -7,4 +7,4 @@ db:
   port : "3306"
   user : "sql12775581"
   database: "sql12775581" 
-  
+  name: "anshika"
